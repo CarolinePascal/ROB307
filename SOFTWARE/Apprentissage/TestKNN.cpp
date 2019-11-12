@@ -37,7 +37,7 @@ int main(){
 	for(int i=0; i<N_POINTS ; i++){
 		res[i] = 0;
 	}
-	//int res[]={12,7,8,0,17,18,1,9,15,6,10,14,5,4,19,3,13,2,16,11} ;
+
 	read_dataset(data_set);
 	//show_dataset(data_set, N_POINTS);
 

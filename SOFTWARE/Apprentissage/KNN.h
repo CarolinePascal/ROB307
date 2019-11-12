@@ -2,7 +2,7 @@
 #include <hls_stream.h>
 #include <ap_axi_sdata.h>
 
-#define N_FEATURES 64
+#define N_FEATURES 50
 #define N_CLUSTER 20
 #define N_POINTS 500
 
