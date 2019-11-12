@@ -15,6 +15,8 @@ void KNN(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
     #pragma HLS INTERFACE s_axilite port=gain bundle=CRTL_BUS
     #pragma HLS INTERFACE s_axilite port=return bundle=CRTL_BUS
 
+	int end;
+
     READ:for(int i=0 ; i<N_POINTS ; i++)
         {
             for(int j= 0; j<N_FEATURES ; j++)
@@ -28,7 +30,7 @@ void KNN(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
             }
         }
 
-    CLUSTER:for(int i=0; i<N_POINTS_IP; i++)
+    CLUSTER:for(int i=0; i<N_POINTS; i++)
             {
                 int cluster = get_cluster(points[i], centroids);
                 if(cluster != results[i]){

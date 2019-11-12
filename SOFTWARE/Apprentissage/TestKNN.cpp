@@ -11,9 +11,8 @@
 static char FILE_NAME[32] = "TEST.csv";
 int res[N_POINTS];
 
-void read_dataset(float** data_set);
-void show_dataset(float** data, int row);
-void cluster_index(int index[N_CLUSTER]);
+void read_dataset(int** data_set);
+void show_dataset(int** data, int row);
 void send_strvalue(hls::stream<intSdCh> &outStream, unsigned int to_send, ap_uint<1> last);
 float get_strvalue(hls::stream<intSdCh> &inStream);
 
@@ -42,13 +41,13 @@ int main(){
 	//show_dataset(data_set, N_POINTS);
 
 	/************** send data ******************/
-	for(int i=0; i<N_POINTS_IP; i++){
+	for(int i=0; i<N_POINTS; i++){
 		for(int j=0 ; j< N_FEATURES ; j++){
 			send_strvalue(inputStream, data_set[i][j] , 0);
 		}
 	}
 
-	for(int i=0 ; i<N_POINTS_IP ; i++){
+	for(int i=0 ; i<N_POINTS ; i++){
 		intSdCh aValue;
 		aValue.data = res[i];
 		aValue.last = (i==(N_POINTS))? 1:0;
@@ -63,11 +62,11 @@ int main(){
 	KNN(inputStream, outputStream);
 
 	printf("res={");
-	for(int i=0 ; i<(N_POINTS_IP) ; i++){
+	for(int i=0 ; i<(N_POINTS) ; i++){
 		intSdCh valOut;
 		outputStream.read(valOut);
 		printf("%d", (int) valOut.data);
-		if(i != N_POINTS_IP-1){
+		if(i != N_POINTS-1){
 			printf(",");
 		}
 	}
@@ -83,7 +82,7 @@ int main(){
 
 
 
-void read_dataset(float** data_set)
+void read_dataset(int** data_set)
 {
   FILE *file;
   size_t nread;
@@ -127,7 +126,7 @@ void read_dataset(float** data_set)
   free (buf);
 }
 
-void show_dataset(float** data, int row)
+void show_dataset(int** data, int row)
 {
   for(int i = 0; i <row ; i++){
     for(int j=0 ; j < N_FEATURES ; j++){
