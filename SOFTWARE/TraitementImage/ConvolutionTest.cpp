@@ -4,23 +4,25 @@
 #include <iostream>
 #include <fstream>
 
-int picture[WIDTH][HEIGHT];
+//For memory issues picture array is initialised here
+static int picture[WIDTH][HEIGHT];
 
 int main()
 {
     hls::stream<intSdCh> inputStream;
     hls::stream<intSdCh> outputStream;
 
-    /*************** load data *****************/
+    //Fill the picture
     for (int i = 0; i < WIDTH; i++)
     {
         for (int j = 0; j < HEIGHT; j++)
         {
-            picture[i][j] = i + j;
+            picture[i][j] = rand() % 255;
+            //picture[i][j] = 100;
         }
     }
 
-    /************** send data ******************/
+    //Send data to the input stream
     for (int i = 0; i < WIDTH; i++)
     {
         for (int j = 0; j < HEIGHT; j++)
@@ -39,7 +41,7 @@ int main()
 
     convolution(outputStream, inputStream);
 
-    printf("res={");
+    printf("Result={");
     for (int i = 0; i < WIDTH; i++)
     {
         for (int j = 0; j < HEIGHT; j++)
@@ -54,11 +56,6 @@ int main()
         }
     }
     printf("} \n");
-    for (int i = 0; i < 2; i++)
-    {
-        //		intSdCh valOut;
-        //		outputStream.read(valOut);
-        //		printf("end : %d ,", (int) valOut.data);
-    }
+
     return 0;
 }
