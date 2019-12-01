@@ -4,13 +4,13 @@
 #include <iostream>
 #include <fstream>
 
-//For memory issues picture array is initialised here
-static int picture[WIDTH][HEIGHT];
-
 int main()
 {
     hls::stream<intSdCh> inputStream;
     hls::stream<intSdCh> outputStream;
+
+    //Array initialisation
+    int picture[WIDTH][HEIGHT];
 
     //Fill the picture
     for (int i = 0; i < WIDTH; i++)
@@ -39,9 +39,10 @@ int main()
         }
     }
 
+    //Perform convolution
     convolution(outputStream, inputStream);
 
-    printf("Result={");
+    printf("Result= \n");
     for (int i = 0; i < WIDTH; i++)
     {
         for (int j = 0; j < HEIGHT; j++)
@@ -54,6 +55,7 @@ int main()
                 printf(",");
             }
         }
+        printf("\n");
     }
     printf("} \n");
 
