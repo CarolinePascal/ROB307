@@ -11,32 +11,30 @@ int main()
 {
     //Initialise arrays
 
-    //Will be updated by the current thread
-    //previous error, cumulated error
-    float previous[2];
-    //command, error
-    float PIDOutput[2];
-
-    //Can be technically modified by another thread !
+    //Can be technically modified by another thread => volatile
     volatile float objective = 5;
     volatile float current = 0;
+    float command = 0;
 
-    hls::stream<intSdCh> inputStream("inputStream");
-    hls::stream<intSdCh> outputStream("outputStream");
+    hls::stream<intSdCh> inputStream;
+    hls::stream<intSdCh> outputStream;
 
     int counter = 0;
 
     //Main loop
     while (counter < 10)
     {
+        //Theorically, update is proceeded here
+        //current = computeCurrent();
+        //objective = computeObjective();
+        current += command*0.5; //Arbitrary
+
         printf("Current = ");
         printf("%f ", current);
         printf("Objective = ");
         printf("%f ", objective);
 
         counter++;
-        //current = computeCurrent();
-        //objective = computeObjective();
 
         //Send data to the input stream
         intSdCh aValue;
@@ -58,18 +56,24 @@ int main()
         aValue.dest = 0;
         inputStream.write(aValue);
 
+        //Compute new command
         PID(inputStream, outputStream);
 
+        //Display results
         printf("Result={");
         for (int i = 0; i < 2; i++)
         {
             intSdCh valOut;
             outputStream.read(valOut);
             if (i == 0)
-                current = valOut.data;
+            {
+                command = (float)valOut.data;
+            }
             printf("%f", (float)valOut.data);
             if (i == 0)
+            {
                 printf(",");
+            }    
         }
         printf("} \n");
     }

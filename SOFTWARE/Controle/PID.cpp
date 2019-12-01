@@ -1,20 +1,9 @@
 #include "PID.h"
 
-//Initialise arrays and values
-
-//previous error, cumulated error
-float previous[2];
-
-//command, error
-float PIDOutput[2];
+//Global values
 
 //Kp,Ki,Kd,scale,min,max,dt
 static float PIDValues[7] = {1, 1, 1, 1, -10, 10, 0.1};
-
-volatile float objective;
-volatile float current;
-
-intSdCh valRef;
 
 /*!
  * \brief Computes a PID regulator on a selected value given an objective and a current value
@@ -26,6 +15,19 @@ void PID(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
 #pragma HLS INTERFACE axis port = outStream
 #pragma HLS INTERFACE axis port = inStream
 #pragma HLS INTERFACE s_axilite port = return bundle = CRTL_BUS
+
+    //Array and values initialisations
+
+    //previous error, cumulated error
+    float previous[2];
+
+    //command, error
+    float PIDOutput[2];
+
+    volatile float objective;
+    volatile float current;
+
+    intSdCh valRef;
 
     //Read the current and the objective value
     intSdCh valIn = inStream.read();
