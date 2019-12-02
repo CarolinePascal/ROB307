@@ -95,8 +95,8 @@ int main()
 		intSdCh valOut;
 		outputStream.read(valOut);
 		/*KNN*/
-		clusters[i] = (int)valOut.data;
-		printf("%d", (int)valOut.data);
+		clusters[i] = valOut.data;
+		printf("%d", valOut.data);
 
 		if (i != N_POINTS - 1)
 		{
@@ -158,7 +158,7 @@ int main()
 	printf("Result={");
 	intSdCh valOut;
 	outputStream.read(valOut);
-	printf("%d", (int)valOut.data);
+	printf("%d", valOut.data);
 	printf("}");
 
 	return 0;
