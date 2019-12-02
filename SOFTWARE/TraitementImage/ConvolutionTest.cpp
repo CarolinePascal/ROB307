@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "Convolution.h"
 #include <iostream>
-#include <fstream>
 
 int main()
 {
@@ -17,8 +16,8 @@ int main()
     {
         for (int j = 0; j < HEIGHT; j++)
         {
-            picture[i][j] = rand() % 255;
-            //picture[i][j] = 100;
+            //picture[i][j] = rand() % 255;
+            picture[i][j] = (i == j) ? 100 : 0;
         }
     }
 
@@ -40,9 +39,10 @@ int main()
     }
 
     //Perform convolution
-    convolution(outputStream, inputStream);
+    convolutionBuffer(outputStream, inputStream);
 
-    printf("Result= \n");
+    printf("Result = \n");
+
     for (int i = 0; i < WIDTH; i++)
     {
         for (int j = 0; j < HEIGHT; j++)
@@ -57,7 +57,6 @@ int main()
         }
         printf("\n");
     }
-    printf("} \n");
 
     return 0;
 }

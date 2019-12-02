@@ -1,8 +1,8 @@
 #include <hls_stream.h>
 #include <ap_axi_sdata.h>
 
-#define WIDTH 64
-#define HEIGHT 64
+#define WIDTH 32
+#define HEIGHT 32
 #define WIN_SIZE 3 //Must be odd !
 #define HALF_SIZE (((WIN_SIZE)-1) / 2)
 

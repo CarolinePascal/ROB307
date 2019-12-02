@@ -1,9 +1,6 @@
 #include "hls_stream.h"
 #include "Convolution.h"
 
-#define WIN_SIZE 3 // must be odd
-#define HALF_SIZE (((WIN_SIZE) - 1) / 2)
-
 /*!
  * \brief Asserts wether a certain pixel is within the picture boundries
  * \param x int, column of the pixel
@@ -25,21 +22,29 @@ inline bool bounds_ok(int y, int x)
 inline int single_convolution(int window[WIN_SIZE][WIN_SIZE], int y, int x)
 {
     int result = 0;
-    ROWS:
+    int counter = 0;
+ROWS:
     for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
-        COLUMNS:
+    {
+    COLUMNS:
         for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
+        {
             if (bounds_ok(y + i, x + j))
+            {
                 result += window[i + HALF_SIZE][j + HALF_SIZE];
-    return result / (WIN_SIZE * WIN_SIZE);
+                counter += 1;
+            }
+        }
+    }
+    return floor(result / counter);
 }
 
 /*!
- * \brief Computes the filter over all the picture
+ * \brief Computes the convolution over all the picture
  * \param inStream, hls::stream<intSdCh> input stream, must send the picture
  * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
  */
-void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
+void convolution(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
 {
 #pragma HLS INTERFACE axis port = outStream
 #pragma HLS INTERFACE axis port = inStream
@@ -48,36 +53,38 @@ void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
     //Array initialisation
 
     //Picture
-    int picture[HEIGHT][WIDTH]
+    int picture[WIDTH][HEIGHT];
     //Convolution window
     int window[WIN_SIZE][WIN_SIZE];
 
-    DATA_INY:
-    for (int y = 0; y < HEIGHT; y++)
+    intSdCh valRef;
+
+DATA_INY:
+    for (int i = 0; i < WIDTH; i++)
     {
-        DATA_INX:
-        for (int x = 0; x < WIDTH; x++)
+    DATA_INX:
+        for (int j = 0; j < HEIGHT; j++)
         {
             intSdCh valIn = in_stream.read();
-            picture[x][y] =  = valIn.data;
-            if (x*y == 0)
+            picture[i][j] = valIn.data;
+            if (i * j == 0)
             {
                 valRef = valIn;
-            }  
+            }
         }
     }
-  
-    LOOPY: 
+
+LOOPY:
     for (int y = 0; y < HEIGHT; y++)
     {
-        LOOPX:
+    LOOPX:
         for (int x = 0; x < WIDTH; x++)
         {
-        //Load window
-            LOADI:
+            //Load window
+        LOADI:
             for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
             {
-                LOADJ:
+            LOADJ:
                 for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
                 {
                     if (bounds_ok(y + i, x + j))
@@ -98,15 +105,15 @@ void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
             valOut.dest = valRef.dest;
             out_stream << valOut;
         }
-    }  
+    }
 }
 
 /*!
- * \brief Computes the filter over all the picture with buffer
+ * \brief Computes the convolution over all the picture with buffer
  * \param inStream, hls::stream<intSdCh> input stream, must send the picture
  * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
  */
-void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
+void convolutionBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
 {
 #pragma HLS INTERFACE axis port = outStream
 #pragma HLS INTERFACE axis port = inStream
@@ -127,7 +134,7 @@ void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_str
     // Load initial values into line buffer
     int read_count = WIDTH * HALF_SIZE + HALF_SIZE + 1;
 
-    BUFFERX1:
+BUFFERX1:
     for (int x = WIDTH - HALF_SIZE - 1; x < WIDTH; x++)
     {
         intSdCh valIn = in_stream.read();
@@ -138,27 +145,27 @@ void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_str
         }
     }
 
-    BUFFERY:
+BUFFERY:
     for (int y = HALF_SIZE; y < WIN_SIZE - 1; y++)
-        BUFFERX2:
+    BUFFERX2:
         for (int x = 0; x < WIDTH; x++)
         {
             intSdCh valIn = in_stream.read();
             line_buf[y][x] = valIn.data;
         }
 
-    //Copy the values into the convolution window
-    WINDOWY:
+//Copy the values into the convolution window
+WINDOWY:
     for (int y = HALF_SIZE; y < WIN_SIZE; y++)
-        WINDOWX:
+    WINDOWX:
         for (int x = HALF_SIZE; x < WIN_SIZE; x++)
             window[y][x] = line_buf[y - 1][x + WIDTH - WIN_SIZE];
 
-    //Start convolution
-    LOOPY:
+//Start convolution
+LOOPY:
     for (int y = 0; y < HEIGHT; y++)
     {
-        LOOPX:
+    LOOPX:
         for (int x = 0; x < WIDTH; x++)
         {
             //Send results
@@ -174,7 +181,7 @@ void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_str
 
             //Shift line buffer column up
             right[0] = line_buf[0][x];
-            SHIFT_UP:
+        SHIFT_UP:
             for (int y = 1; y < WIN_SIZE - 1; y++)
             {
                 right[y] = line_buf[y - 1][x] = line_buf[y][x];
@@ -189,22 +196,21 @@ void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_str
             }
             right[WIN_SIZE - 1] = line_buf[WIN_SIZE - 2][x] = val_in;
 
-            //Shift window left
-            SHIFT_LEFTY:
+        //Shift window left
+        SHIFT_LEFTY:
             for (int y = 0; y < WIN_SIZE; y++)
             {
-                SHIFT_LEFTX:
+            SHIFT_LEFTX:
                 for (int x = 0; x < WIN_SIZE - 1; x++)
                 {
                     window[y][x] = window[y][x + 1];
                 }
             }
 
-            //Update rightmost window values
-            UPDATE:
+        //Update rightmost window values
+        UPDATE:
             for (int y = 0; y < WIN_SIZE; y++)
                 window[y][WIN_SIZE - 1] = right[y];
         }
     }
 }
-
