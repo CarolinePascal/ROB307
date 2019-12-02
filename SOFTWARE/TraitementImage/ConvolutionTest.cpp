@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "Convolution.h"
 #include <iostream>
+#include <fstream>
 
 int main()
 {
@@ -9,25 +10,25 @@ int main()
     hls::stream<intSdCh> outputStream;
 
     //Array initialisation
-    int picture[WIDTH][HEIGHT];
+    int picture[HEIGHT][WIDTH];
 
     //Fill the picture
-    for (int i = 0; i < WIDTH; i++)
+    for (int y = 0; y < HEIGHT; y++)
     {
-        for (int j = 0; j < HEIGHT; j++)
+        for (int x = 0; x < WIDTH; x++)
         {
-            //picture[i][j] = rand() % 255;
-            picture[i][j] = (i == j) ? 100 : 0;
+            //picture[y][x] = rand() % 255;
+            picture[y][x] = (x == y) ? 100 : 0;
         }
     }
 
     //Send data to the input stream
-    for (int i = 0; i < WIDTH; i++)
+    for (int y = 0; y < HEIGHT; y++)
     {
-        for (int j = 0; j < HEIGHT; j++)
+        for (int x = 0; x < WIDTH; x++)
         {
             intSdCh aValue;
-            aValue.data = picture[i][j];
+            aValue.data = picture[y][x];
             aValue.last = 0;
             aValue.strb = -1;
             aValue.keep = 15;
@@ -38,18 +39,21 @@ int main()
         }
     }
 
-    //Perform convolution
+    //Perform median filter
     convolutionBuffer(outputStream, inputStream);
 
     printf("Result = \n");
-
-    for (int i = 0; i < WIDTH; i++)
+    for (int y = 0; y < HEIGHT; y++)
     {
-        for (int j = 0; j < HEIGHT; j++)
+        for (int x = 0; x < WIDTH; x++)
         {
             intSdCh valOut;
             outputStream.read(valOut);
             printf("%d", (int)valOut.data);
+            if (x * y != (WIDTH - 1) * (HEIGHT - 1))
+            {
+                printf(",");
+            }
         }
         printf("\n");
     }

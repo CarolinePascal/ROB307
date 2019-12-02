@@ -53,21 +53,21 @@ void convolution(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stre
     //Array initialisation
 
     //Picture
-    int picture[WIDTH][HEIGHT];
+    int picture[HEIGHT][WIDTH];
     //Convolution window
     int window[WIN_SIZE][WIN_SIZE];
 
     intSdCh valRef;
 
 DATA_INY:
-    for (int i = 0; i < WIDTH; i++)
+    for (int x = 0; x < WIDTH; x++)
     {
     DATA_INX:
-        for (int j = 0; j < HEIGHT; j++)
+        for (int y = 0; y < HEIGHT; y++)
         {
             intSdCh valIn = in_stream.read();
-            picture[i][j] = valIn.data;
-            if (i * j == 0)
+            picture[y][x] = valIn.data;
+            if (x * y == 0)
             {
                 valRef = valIn;
             }
@@ -87,10 +87,7 @@ LOOPY:
             LOADJ:
                 for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
                 {
-                    if (bounds_ok(y + i, x + j))
-                    {
-                        window[i + HALF_SIZE][j + HALF_SIZE] = picture[y + i][x + j];
-                    }
+                    window[i + HALF_SIZE][j + HALF_SIZE] = picture[y + i][x + j];
                 }
             }
 
