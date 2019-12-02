@@ -3,7 +3,7 @@
 
 #define LENGTH_DAT 10
 #define LENGTH_REF 10
-#define N_FEATURES 3 
+#define N_FEATURES 2
 
 typedef ap_axis<32, 2, 5, 6> intSdCh;
 

@@ -7,22 +7,22 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
 #pragma HLS INTERFACE s_axilite port = return bundle = CRTL_BUS
 
     //Array initialisation
-    float ref[LENGTH_REF][2];
-    float dat[LENGTH_DAT][2];
-    float filteredRef[LENGTH_DAT][2];
+    float ref[LENGTH_REF][N_FEATURES];
+    float dat[LENGTH_DAT][N_FEATURES];
+    float filteredRef[LENGTH_DAT][N_FEATURES];
 
     intSdCh valRef;
 
     READ_REF:
     for (int i = 0; i < LENGTH_REF; i++)
     {
-        for (int j = 0; j < 2; j++)
+        for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh valIn = inStream.read();
             ref[i][j] = valIn.data;
             if (i == 0 && j == 0)
             {
-                valref = valIn;
+                valRef = valIn;
             }
         }
     }
@@ -30,7 +30,7 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
     READ_DAT:
     for (int i = 0; i < LENGTH_DAT; i++)
     {
-        for (int j = 0; j < 2; j++)
+        for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh valIn = inStream.read();
             dat[i][j] = valIn.data;
@@ -45,13 +45,13 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
     DAT:
     for (int i = 0; i < LENGTH_DAT; i++)
     {
-        distance = 0;
         distance_min = 99999999999;
         index = 0;
 
         REF:
         for (int j = 0; j < LENGTH_REF; j++)
         {   
+            distance = 0;
             //Compute distance
             DISTANCE:
             for (int k = 0; k < N_FEATURES; k++)
@@ -61,7 +61,7 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
             //If the distance is smaller, we update it and the corresponding index
             if(distance<distance_min)
             {
-                distance = distance_min;
+                distance_min = distance;
                 index = j;
             }
         }
@@ -78,13 +78,17 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
     SEND:
     for(int i = 0; i < LENGTH_DAT; i++)
     {
-        valOut.data = filteredRef[i];
-        valOut.keep = valref.keep;
-        valOut.strb = valref.strb;
-        valOut.user = valref.user;
-        valOut.last = (i == LENGTH_DAT-1) ? 1 : 0;
-        valOut.id = valref.id;
-        valOut.dest = valref.dest;
-        outStream << valOut;
+    	for(int j = 0; j < N_FEATURES; j++)
+    	{
+        	intSdCh valOut;
+            valOut.data = filteredRef[i][j];
+            valOut.keep = valRef.keep;
+            valOut.strb = valRef.strb;
+            valOut.user = valRef.user;
+            valOut.last = (i == LENGTH_DAT-1) ? 1 : 0;
+            valOut.id = valRef.id;
+            valOut.dest = valRef.dest;
+            outStream << valOut;
+    	}
     }  
 }

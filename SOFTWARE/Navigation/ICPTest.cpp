@@ -11,26 +11,30 @@ int main()
 
     //Array initialisations
 
-    float dat[LENGTH_DAT][2];
-    float ref[LENGTH_REF][2];
-    float filteredRef[LENGTH_DAT][2];
+    float dat[LENGTH_DAT][N_FEATURES];
+    float ref[LENGTH_REF][N_FEATURES];
+    float filteredRef[LENGTH_DAT][N_FEATURES];
 
     for(int i = 0; i < LENGTH_DAT; i++)
     {
-        dat[i][0] = i;
-        dat[i][1] = i;
+    	for(int j = 0; j < N_FEATURES; j++)
+    	{
+    		dat[i][j]=i;
+    	}
     }
 
     for(int i = 0; i < LENGTH_REF; i++)
     {
-        ref[i][0] = LENGTH_REF - i;
-        ref[i][1] = 0;
+    	for(int j = 0; j < N_FEATURES; j++)
+    	{
+    		ref[i][j]=i;
+    	}
     }
 
     //Send data to the input stream
     for (int i = 0; i < LENGTH_REF; i++)
     {
-        for (int j = 0; j < 2; j++)
+        for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh aValue;
 			aValue.data = ref[i][j];
@@ -46,7 +50,7 @@ int main()
 
     for (int i = 0; i < LENGTH_REF; i++)
     {
-        for (int j = 0; j < 2; j++)
+        for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh aValue;
 			aValue.data = dat[i][j];
@@ -61,7 +65,7 @@ int main()
     }
 	
     //Perform association
-	associations(inputStream, outputStream);
+	association(inputStream, outputStream);
 
     //Display the results
 	printf("Result= \n");
@@ -73,7 +77,7 @@ int main()
             outputStream.read(valOut);
             printf("%d", (int)valOut.data);
         }
-        print("\n");
+        printf("\n");
 	}
 
 	return 0;
