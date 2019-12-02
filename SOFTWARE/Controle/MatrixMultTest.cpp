@@ -20,7 +20,7 @@ int main()
 	{
 		for (int j = 0; j < DIM; j++)
 		{
-			A[i][j] == i+j;
+			A[i][j] = (i==j)? 1:0;
 			B[i][j] = i*j;
 		}
 	}
@@ -60,7 +60,7 @@ int main()
 	}
 
 	//Perform multiplication
-	MatrixMult(inputStream,outputStream);
+	matrixMult(inputStream,outputStream);
 
 	//Print results
 	printf("Result= \n");
