@@ -50,10 +50,6 @@ int main()
             intSdCh valOut;
             outputStream.read(valOut);
             printf("%d", (int)valOut.data);
-            if (i != (WIDTH - 1) * (HEIGHT - 1))
-            {
-                printf(",");
-            }
         }
         printf("\n");
     }
