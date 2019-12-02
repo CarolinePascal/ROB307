@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Convolution.h"
+#include "MedianFilter.h"
 #include <iostream>
 #include <fstream>
 
@@ -17,8 +17,8 @@ int main()
     {
         for (int j = 0; j < HEIGHT; j++)
         {
-            picture[i][j] = rand() % 255;
-            //picture[i][j] = 100;
+            //picture[i][j] = rand() % 255;
+            picture[i][j] = (i == j) ? 100 : 0;
         }
     }
 
@@ -40,9 +40,9 @@ int main()
     }
 
     //Perform median filter
-    filter(outputStream, inputStream);
+    filterBuffer(outputStream, inputStream);
 
-    printf("Result= \n");
+    printf("Result = \n");
     for (int i = 0; i < WIDTH; i++)
     {
         for (int j = 0; j < HEIGHT; j++)
