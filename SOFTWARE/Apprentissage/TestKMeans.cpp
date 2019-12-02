@@ -3,6 +3,7 @@
 #include "KMeans.h"
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
 #include <vector>
 #include <string>
@@ -20,13 +21,13 @@ int main()
 	int points[N_POINTS][N_FEATURES];
 
 	/*KNN*/
-	//int clusters[N_POINTS];
+	int clusters[N_POINTS];
 
 	//File pointer
 	fstream fin;
 
 	//Open an existing file
-	fin.open("temp.csv", ios::in);
+	fin.open("TEST.csv", ios::in);
 
 	//Read the Data from the file as String Vector
 	string line;
@@ -70,10 +71,11 @@ int main()
 	//The first centroids are randomly initialised and sent
 	for (int i = 0; i < N_CLUSTER; i++)
 	{
+		int index = rand() % (N_POINTS - 1);
 		for (int j = 0; j < N_FEATURES; j++)
 		{
 			intSdCh aValue;
-			aValue.data = points[i * i + 2][j * j + 5];
+			aValue.data = points[index][j];
 			aValue.last = (i * j == (N_CLUSTER - 1) * (N_FEATURES - 1)) ? 1 : 0;
 			aValue.strb = -1;
 			aValue.keep = 15;
@@ -93,7 +95,7 @@ int main()
 		intSdCh valOut;
 		outputStream.read(valOut);
 		/*KNN*/
-		//clusters[i] = (int)valOut.data;
+		clusters[i] = (int)valOut.data;
 		printf("%d", (int)valOut.data);
 
 		if (i != N_POINTS - 1)
@@ -103,8 +105,9 @@ int main()
 	}
 	printf("} \n");
 
-	/*Code for KNN*/
-	/*
+	/*KMeans only*/
+	//return(0);
+
 	//Send data to the input stream
 	for (int i = 0; i < N_POINTS; i++)
 	{
@@ -134,9 +137,9 @@ int main()
 		aValue.dest = 0;
 		inputStream.write(aValue);
 	}
-	
+
 	//We try to classify the first point
-	for(int i = 0; i < N_FEATURES; i++)
+	for (int i = 0; i < N_FEATURES; i++)
 	{
 		intSdCh aValue;
 		aValue.data = points[0][i];
