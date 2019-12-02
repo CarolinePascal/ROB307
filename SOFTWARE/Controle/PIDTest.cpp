@@ -27,7 +27,7 @@ int main()
         //Theorically, update is proceeded here
         //current = computeCurrent();
         //objective = computeObjective();
-        current += command*0.5; //Arbitrary
+        current += command * 0.5; //Arbitrary
 
         printf("Current = ");
         printf("%f ", current);
@@ -73,7 +73,7 @@ int main()
             if (i == 0)
             {
                 printf(",");
-            }    
+            }
         }
         printf("} \n");
     }
