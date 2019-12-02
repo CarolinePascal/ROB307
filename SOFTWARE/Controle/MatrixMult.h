@@ -1,7 +1,7 @@
 #include <hls_stream.h>
 #include <ap_axi_sdata.h>
 
-#define DIM 64
+#define DIM 32
 
 typedef ap_axis<32, 2, 5, 6> intSdCh;
 
