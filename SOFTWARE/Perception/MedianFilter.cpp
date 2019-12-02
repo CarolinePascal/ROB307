@@ -24,21 +24,39 @@ inline bool bounds_ok(int y, int x)
  */
 inline int single_medianFilter(int window[WIN_SIZE][WIN_SIZE], int y, int x)
 {
-FIRST:
-    for (int i = 0; i < WIN_SIZE * WIN_SIZE - 1; i++)
+    int size = 0;
+    int flattenWindow[WIN_SIZE * WIN_SIZE];
+
+FLATTEN1:
+    for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
     {
-    SECOND:
-        for (int j = 0; j < WIN_SIZE * WIN_SIZE - i - 1; j++)
+    FLATTEN2:
+        for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
         {
-            if (window[(int)floor(j / WIN_SIZE)][j % WIN_SIZE] > window[(int)floor((j + 1) / WIN_SIZE)][(j + 1) % WIN_SIZE])
+            if (bounds_ok(y + i, x + j))
             {
-                int temp = window[(int)floor(j / WIN_SIZE)][j % WIN_SIZE];
-                window[(int)floor(j / WIN_SIZE)][j % WIN_SIZE] = window[(int)floor((j + 1) / WIN_SIZE)][(j + 1) % WIN_SIZE];
-                window[(int)floor((j + 1) / WIN_SIZE)][(j + 1) % WIN_SIZE] = temp;
+                flattenWindow[size] = window[i + HALF_SIZE][j + HALF_SIZE];
+                size++;
             }
         }
     }
-    return (window[(int)floor(WIN_SIZE / 2)][(int)floor(WIN_SIZE / 2)]);
+
+FIRST:
+    for (int i = 0; i < size - 1; i++)
+    {
+    SECOND:
+        for (int j = 0; j < size - i - 1; j++)
+        {
+
+            if (flattenWindow[j] > flattenWindow[j + 1])
+            {
+                int temp = flattenWindow[j];
+                flattenWindow[j] = flattenWindow[j + 1];
+                flattenWindow[j + 1] = temp;
+            }
+        }
+    }
+    return (flattenWindow[(int)floor(size / 2)]);
 }
 
 /*!
@@ -55,21 +73,21 @@ void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
     //Array initialisation
 
     //Picture
-    int picture[WIDTH][HEIGHT];
+    int picture[HEIGHT][WIDTH];
     //Convolution window
     int window[WIN_SIZE][WIN_SIZE];
 
     intSdCh valRef;
 
 DATA_INY:
-    for (int i = 0; i < WIDTH; i++)
+    for (int x = 0; x < WIDTH; x++)
     {
     DATA_INX:
-        for (int j = 0; j < HEIGHT; j++)
+        for (int y = 0; y < HEIGHT; y++)
         {
             intSdCh valIn = in_stream.read();
-            picture[i][j] = valIn.data;
-            if (i * j == 0)
+            picture[y][x] = valIn.data;
+            if (x * y == 0)
             {
                 valRef = valIn;
             }
@@ -89,10 +107,7 @@ LOOPY:
             LOADJ:
                 for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
                 {
-                    if (bounds_ok(y + i, x + j))
-                    {
-                        window[i + HALF_SIZE][j + HALF_SIZE] = picture[y + i][x + j];
-                    }
+                    window[i + HALF_SIZE][j + HALF_SIZE] = picture[y + i][x + j];
                 }
             }
 
