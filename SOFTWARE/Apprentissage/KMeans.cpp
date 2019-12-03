@@ -22,7 +22,7 @@ void KMeans(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
     //Counter of the number of points in each cluster
     int np_cluster[N_CLUSTER] = {0};
     //Indices of the corresponding cluster for each point
-    int results[N_POINTS] = {0};
+    int results[N_POINTS];
 
     intSdCh valRef;
 
@@ -242,13 +242,11 @@ COUNTER:
     }
 
     int cluster = 0;
-    printf("%i \n", counter[0]);
 
 //Classification
 GET_CLASS:
     for (int i = 0; i < N_CLUSTER; i++)
     {
-        printf("%i \n", counter[i + 1]);
         if (counter[i + 1] > counter[i])
         {
             cluster = i + 1;
