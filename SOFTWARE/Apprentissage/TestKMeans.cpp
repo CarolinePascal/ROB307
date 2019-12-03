@@ -2,15 +2,7 @@
 #include <stdlib.h>
 #include "KMeans.h"
 #include <iostream>
-#include <fstream>
 #include <cstdlib>
-
-#include <vector>
-#include <string>
-
-using namespace std;
-
-static char FILE_NAME[32] = "TEST.csv";
 
 int main()
 {
@@ -23,31 +15,11 @@ int main()
 	/*KNN*/
 	int clusters[N_POINTS];
 
-	//File pointer
-	fstream fin;
-
-	//Open an existing file
-	fin.open("TEST.csv", ios::in);
-
-	//Read the Data from the file as String Vector
-	string line;
-	int value;
-	int counter = 0;
-
-	while (getline(fin, line, '\n'))
+	for (int i = 0; i < N_POINTS; i++)
 	{
-		std::stringstream ss(line);
-
-		while (getline(ss, line, ';'))
+		for (int j = 0; j < N_FEATURES; j++)
 		{
-			if (sscanf(line.c_str(), "%d", &value) != 1)
-			{
-				printf("Conversion error !");
-				return 1;
-			}
-
-			points[(int)(counter / N_FEATURES)][counter % N_FEATURES] = value;
-			counter++;
+			points[i][j] = rand()%255;
 		}
 	}
 
