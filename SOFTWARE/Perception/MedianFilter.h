@@ -11,4 +11,5 @@ typedef ap_axis<32, 2, 5, 6> intSdCh;
 inline bool bounds_ok(int y, int x);
 inline int single_medianFilter(int window[WIN_SIZE][WIN_SIZE], int y, int x);
 void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream);
-void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream);
+
+//void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream);

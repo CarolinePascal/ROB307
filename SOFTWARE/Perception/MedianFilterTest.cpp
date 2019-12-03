@@ -39,8 +39,16 @@ int main()
         }
     }
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     //Perform median filter
     filter(outputStream, inputStream);
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+
+	printf("Code execution time : %ld \n", duration);
 
     printf("Result = \n");
     for (int y = 0; y < HEIGHT; y++)

@@ -130,6 +130,7 @@ LOOPY:
  * \param inStream, hls::stream<intSdCh> input stream, must send the picture
  * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
  */
+ /*
 void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
 {
 #pragma HLS INTERFACE axis port = outStream
@@ -231,3 +232,4 @@ LOOPY:
         }
     }
 }
+*/

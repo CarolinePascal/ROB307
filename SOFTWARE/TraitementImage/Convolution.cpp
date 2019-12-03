@@ -1,5 +1,6 @@
 #include "hls_stream.h"
 #include "Convolution.h"
+#include <math.h>
 
 /*!
  * \brief Asserts wether a certain pixel is within the picture boundries
@@ -36,7 +37,7 @@ ROWS:
             }
         }
     }
-    return floor(result / counter);
+    return (int)floor(result / counter);
 }
 
 /*!
@@ -54,6 +55,8 @@ void convolution(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stre
 
     //Picture
     int picture[HEIGHT][WIDTH];
+    //FilteredPicture
+    int filteredPicture[HEIGHT][WIDTH];
     //Convolution window
     int window[WIN_SIZE][WIN_SIZE];
 
@@ -91,9 +94,20 @@ LOOPY:
                 }
             }
 
-            //Send results
+            filteredPicture[y][x] = single_convolution(window, y, x);
+
+        }
+    }
+
+    //Send results
+    DATA_OUTY:
+    for (int x = 0; x < WIDTH; x++)
+    {
+    DATA_OUTX:
+        for (int y = 0; y < HEIGHT; y++)
+        {
             intSdCh valOut;
-            valOut.data = single_convolution(window, y, x);
+            valOut.data = filteredPicture[y][x];
             valOut.keep = valRef.keep;
             valOut.strb = valRef.strb;
             valOut.user = valRef.user;
@@ -105,11 +119,13 @@ LOOPY:
     }
 }
 
+
 /*!
  * \brief Computes the convolution over all the picture with buffer
  * \param inStream, hls::stream<intSdCh> input stream, must send the picture
  * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
  */
+ /*
 void convolutionBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
 {
 #pragma HLS INTERFACE axis port = outStream
@@ -118,6 +134,8 @@ void convolutionBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &i
 
     //Arrays initialisation
 
+    //Filtered picture
+    int filteredPicture[HEIGHT][WIDTH];
     //Convolution window
     int window[WIN_SIZE][WIN_SIZE];
     //Line buffer
@@ -165,16 +183,7 @@ LOOPY:
     LOOPX:
         for (int x = 0; x < WIDTH; x++)
         {
-            //Send results
-            intSdCh valOut;
-            valOut.data = single_convolution(window, y, x);
-            valOut.keep = valRef.keep;
-            valOut.strb = valRef.strb;
-            valOut.user = valRef.user;
-            valOut.last = (x * y == (HEIGHT - 1) * (WIDTH - 1)) ? 1 : 0;
-            valOut.id = valRef.id;
-            valOut.dest = valRef.dest;
-            out_stream << valOut;
+            filteredPicture[y][x] = single_convolution(window,y,x);
 
             //Shift line buffer column up
             right[0] = line_buf[0][x];
@@ -210,4 +219,24 @@ LOOPY:
                 window[y][WIN_SIZE - 1] = right[y];
         }
     }
+
+    //Send results
+DATA_OUTY:
+    for (int x = 0; x < WIDTH; x++)
+    {
+    DATA_OUTX:
+        for (int y = 0; y < HEIGHT; y++)
+        {
+            intSdCh valOut;
+            valOut.data = filteredPicture[y][x];
+            valOut.keep = valRef.keep;
+            valOut.strb = valRef.strb;
+            valOut.user = valRef.user;
+            valOut.last = (x * y == (HEIGHT - 1) * (WIDTH - 1)) ? 1 : 0;
+            valOut.id = valRef.id;
+            valOut.dest = valRef.dest;
+            out_stream << valOut;
+        }
+    }
 }
+*/
