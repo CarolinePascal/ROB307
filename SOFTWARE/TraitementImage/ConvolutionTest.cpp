@@ -12,7 +12,7 @@ int main()
     hls::stream<intSdCh> outputStream;
 
     //Array initialisation
-    int picture[HEIGHT][WIDTH];
+    unsigned char picture[HEIGHT][WIDTH];
 
     //Fill the picture
     for (int y = 0; y < HEIGHT; y++)
@@ -50,8 +50,7 @@ int main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-	printf("Code execution time : %ld \n", duration);
-
+    printf("Code execution time : %ld \n", duration);
 
     printf("Result = \n");
     for (int y = 0; y < HEIGHT; y++)
