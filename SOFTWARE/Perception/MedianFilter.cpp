@@ -6,57 +6,13 @@
 
 /*!
  * \brief Asserts wether a certain pixel is within the picture boundries
- * \param x int, column of the pixel
- * \param y int, row of the pixel
+ * \param x unsigned char, column of the pixel
+ * \param y unsigned char, row of the pixel
  * \return True if the pixel is in the picture, False otherwise
  */
-inline bool bounds_ok(int y, int x)
+inline bool bounds_ok(unsigned char y, unsigned char x)
 {
     return (0 <= y && y < HEIGHT && 0 <= x && x < WIDTH);
-}
-
-/*!
- * \brief Computes the median filter at a certain pixel of the picture
- * \param windows int[WIN_SIZE][WIN_SIZE], the filtering window around the considered pixel
- * \param x int, column of the pixel
- * \param y int, row of the pixel
- * \return int, result of the filter
- */
-inline int single_medianFilter(int window[WIN_SIZE][WIN_SIZE], int y, int x)
-{
-    int size = 0;
-    int flattenWindow[WIN_SIZE * WIN_SIZE];
-
-FLATTEN1:
-    for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
-    {
-    FLATTEN2:
-        for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
-        {
-            if (bounds_ok(y + i, x + j))
-            {
-                flattenWindow[size] = window[i + HALF_SIZE][j + HALF_SIZE];
-                size++;
-            }
-        }
-    }
-
-FIRST:
-    for (int i = 0; i < size - 1; i++)
-    {
-    SECOND:
-        for (int j = 0; j < size - i - 1; j++)
-        {
-
-            if (flattenWindow[j] > flattenWindow[j + 1])
-            {
-                int temp = flattenWindow[j];
-                flattenWindow[j] = flattenWindow[j + 1];
-                flattenWindow[j + 1] = temp;
-            }
-        }
-    }
-    return (flattenWindow[(int)floor(size / 2)]);
 }
 
 /*!
@@ -73,11 +29,16 @@ void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
     //Array initialisation
 
     //Picture
-    int picture[HEIGHT][WIDTH];
+    unsigned char picture[HEIGHT][WIDTH];
+    //FilteredPicture
+    unsigned char filteredPicture[HEIGHT][WIDTH];
     //Convolution window
-    int window[WIN_SIZE][WIN_SIZE];
+    unsigned char window[WIN_SIZE * WIN_SIZE];
 
     intSdCh valRef;
+
+    unsigned char temp1, temp2, result;
+    unsigned int counter, index;
 
 DATA_INY:
     for (int x = 0; x < WIDTH; x++)
@@ -86,7 +47,7 @@ DATA_INY:
         for (int y = 0; y < HEIGHT; y++)
         {
             intSdCh valIn = in_stream.read();
-            picture[y][x] = valIn.data;
+            picture[y][x] = (unsigned char)valIn.data;
             if (x * y == 0)
             {
                 valRef = valIn;
@@ -100,6 +61,7 @@ LOOPY:
     LOOPX:
         for (int x = 0; x < WIDTH; x++)
         {
+            counter = 0;
             //Load window
         LOADI:
             for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
@@ -107,13 +69,45 @@ LOOPY:
             LOADJ:
                 for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
                 {
-                    window[i + HALF_SIZE][j + HALF_SIZE] = picture[y + i][x + j];
+                    if (bounds_ok(y + i, x + j))
+                    {
+                        index = counter;
+                        result = picture[y + i][x + j];
+                    SORT1:
+                        for (int k = 0; k < counter; k++)
+                        {
+                            if (window[k] > result)
+                            {
+                                temp1 = window[k];
+                                index = k;
+                            SORT2:
+                                for (int l = k + 1; l <= counter; l++)
+                                {
+                                    temp2 = window[l];
+                                    window[l] = temp1;
+                                    temp1 = temp2;
+                                }
+                                break;
+                            }
+                        }
+                        window[index] = result;
+                        counter += 1;
+                    }
                 }
             }
+            filteredPicture[y][x] = window[(int)floor(counter / 2)];
+        }
+    }
 
-            //Send results
+//Send results
+DATA_OUTY:
+    for (int x = 0; x < WIDTH; x++)
+    {
+    DATA_OUTX:
+        for (int y = 0; y < HEIGHT; y++)
+        {
             intSdCh valOut;
-            valOut.data = single_medianFilter(window, y, x);
+            valOut.data = filteredPicture[y][x];
             valOut.keep = valRef.keep;
             valOut.strb = valRef.strb;
             valOut.user = valRef.user;
@@ -124,112 +118,3 @@ LOOPY:
         }
     }
 }
-
-/*!
- * \brief Computes the filter over all the picture with buffer
- * \param inStream, hls::stream<intSdCh> input stream, must send the picture
- * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
- */
- /*
-void filterBuffer(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
-{
-#pragma HLS INTERFACE axis port = outStream
-#pragma HLS INTERFACE axis port = inStream
-#pragma HLS INTERFACE s_axilite port = return bundle = CRTL_BUS
-
-    //Arrays initialisation
-
-    //Convolution window
-    int window[WIN_SIZE][WIN_SIZE];
-    //Line buffer
-    int line_buf[WIN_SIZE - 1][WIDTH];
-    //Column buffer
-    int right[WIN_SIZE];
-
-    int val_in = 0;
-    intSdCh valRef;
-
-    // Load initial values into line buffer
-    int read_count = WIDTH * HALF_SIZE + HALF_SIZE + 1;
-
-BUFFERX1:
-    for (int x = WIDTH - HALF_SIZE - 1; x < WIDTH; x++)
-    {
-        intSdCh valIn = in_stream.read();
-        line_buf[HALF_SIZE - 1][x] = valIn.data;
-        if (x == 0)
-        {
-            valRef = valIn;
-        }
-    }
-
-BUFFERY:
-    for (int y = HALF_SIZE; y < WIN_SIZE - 1; y++)
-    BUFFERX2:
-        for (int x = 0; x < WIDTH; x++)
-        {
-            intSdCh valIn = in_stream.read();
-            line_buf[y][x] = valIn.data;
-        }
-
-//Copy the values into the convolution window
-WINDOWY:
-    for (int y = HALF_SIZE; y < WIN_SIZE; y++)
-    WINDOWX:
-        for (int x = HALF_SIZE; x < WIN_SIZE; x++)
-            window[y][x] = line_buf[y - 1][x + WIDTH - WIN_SIZE];
-
-//Start convolution
-LOOPY:
-    for (int y = 0; y < HEIGHT; y++)
-    {
-    LOOPX:
-        for (int x = 0; x < WIDTH; x++)
-        {
-            //Send results
-            intSdCh valOut;
-            valOut.data = single_medianFilter(window, y, x);
-            valOut.keep = valRef.keep;
-            valOut.strb = valRef.strb;
-            valOut.user = valRef.user;
-            valOut.last = (x * y == (HEIGHT - 1) * (WIDTH - 1)) ? 1 : 0;
-            valOut.id = valRef.id;
-            valOut.dest = valRef.dest;
-            out_stream << valOut;
-
-            //Shift line buffer column up
-            right[0] = line_buf[0][x];
-        SHIFT_UP:
-            for (int y = 1; y < WIN_SIZE - 1; y++)
-            {
-                right[y] = line_buf[y - 1][x] = line_buf[y][x];
-            }
-
-            // Read input value
-            if (read_count < HEIGHT * WIDTH)
-            {
-                intSdCh valIn = in_stream.read();
-                val_in = valIn.data;
-                read_count++;
-            }
-            right[WIN_SIZE - 1] = line_buf[WIN_SIZE - 2][x] = val_in;
-
-        //Shift window left
-        SHIFT_LEFTY:
-            for (int y = 0; y < WIN_SIZE; y++)
-            {
-            SHIFT_LEFTX:
-                for (int x = 0; x < WIN_SIZE - 1; x++)
-                {
-                    window[y][x] = window[y][x + 1];
-                }
-            }
-
-        //Update rightmost window values
-        UPDATE:
-            for (int y = 0; y < WIN_SIZE; y++)
-                window[y][WIN_SIZE - 1] = right[y];
-        }
-    }
-}
-*/
