@@ -13,7 +13,7 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
 
     intSdCh valRef;
 
-    READ_REF:
+READ_REF:
     for (int i = 0; i < LENGTH_REF; i++)
     {
         for (int j = 0; j < N_FEATURES; j++)
@@ -27,7 +27,7 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
         }
     }
 
-    READ_DAT:
+READ_DAT:
     for (int i = 0; i < LENGTH_DAT; i++)
     {
         for (int j = 0; j < N_FEATURES; j++)
@@ -42,53 +42,53 @@ void association(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream
 
     int index = 0;
 
-    DAT:
+DAT:
     for (int i = 0; i < LENGTH_DAT; i++)
     {
         distance_min = 99999999999;
         index = 0;
 
-        REF:
+    REF:
         for (int j = 0; j < LENGTH_REF; j++)
-        {   
+        {
             distance = 0;
-            //Compute distance
-            DISTANCE:
+        //Compute distance
+        DISTANCE:
             for (int k = 0; k < N_FEATURES; k++)
             {
-                distance += (ref[j][k] - dat[i][k])*(ref[j][k] - dat[i][k]);
+                distance += (ref[j][k] - dat[i][k]) * (ref[j][k] - dat[i][k]);
             }
             //If the distance is smaller, we update it and the corresponding index
-            if(distance<distance_min)
+            if (distance < distance_min)
             {
                 distance_min = distance;
                 index = j;
             }
         }
 
-        //We keep only the closest reference points
-        CLOSEST:
+    //We keep only the closest reference points
+    CLOSEST:
         for (int k = 0; k < N_FEATURES; k++)
         {
             filteredRef[i][k] = ref[index][k];
         }
     }
 
-    //Send results
-    SEND:
-    for(int i = 0; i < LENGTH_DAT; i++)
+//Send results
+SEND:
+    for (int i = 0; i < LENGTH_DAT; i++)
     {
-    	for(int j = 0; j < N_FEATURES; j++)
-    	{
-        	intSdCh valOut;
+        for (int j = 0; j < N_FEATURES; j++)
+        {
+            intSdCh valOut;
             valOut.data = filteredRef[i][j];
             valOut.keep = valRef.keep;
             valOut.strb = valRef.strb;
             valOut.user = valRef.user;
-            valOut.last = (i == LENGTH_DAT-1) ? 1 : 0;
+            valOut.last = (i == LENGTH_DAT - 1) ? 1 : 0;
             valOut.id = valRef.id;
             valOut.dest = valRef.dest;
             outStream << valOut;
-    	}
-    }  
+        }
+    }
 }
