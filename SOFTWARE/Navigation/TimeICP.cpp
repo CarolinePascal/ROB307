@@ -14,32 +14,32 @@ void association(float ref[LENGTH_REF][N_FEATURES], float dat[LENGTH_DAT][N_FEAT
 
     int index = 0;
 
-    DAT:
+DAT:
     for (int i = 0; i < LENGTH_DAT; i++)
     {
         distance_min = 99999999999;
         index = 0;
 
-        REF:
+    REF:
         for (int j = 0; j < LENGTH_REF; j++)
-        {   
+        {
             distance = 0;
-            //Compute distance
-            DISTANCE:
+        //Compute distance
+        DISTANCE:
             for (int k = 0; k < N_FEATURES; k++)
             {
-                distance += (ref[j][k] - dat[i][k])*(ref[j][k] - dat[i][k]);
+                distance += (ref[j][k] - dat[i][k]) * (ref[j][k] - dat[i][k]);
             }
             //If the distance is smaller, we update it and the corresponding index
-            if(distance<distance_min)
+            if (distance < distance_min)
             {
                 distance_min = distance;
                 index = j;
             }
         }
 
-        //We keep only the closest reference points
-        CLOSEST:
+    //We keep only the closest reference points
+    CLOSEST:
         for (int k = 0; k < N_FEATURES; k++)
         {
             filteredRef[i][k] = ref[index][k];
@@ -47,45 +47,49 @@ void association(float ref[LENGTH_REF][N_FEATURES], float dat[LENGTH_DAT][N_FEAT
     }
 }
 
-
 main()
 {
     float dat[LENGTH_DAT][N_FEATURES];
     float ref[LENGTH_REF][N_FEATURES];
     float filteredRef[LENGTH_DAT][N_FEATURES];
 
-    for(int i = 0; i < LENGTH_DAT; i++)
+    for (int i = 0; i < LENGTH_DAT; i++)
     {
-    	for(int j = 0; j < N_FEATURES; j++)
-    	{
-    		dat[i][j]=i;
-    	}
+        for (int j = 0; j < N_FEATURES; j++)
+        {
+            dat[i][j] = i;
+        }
     }
 
-    for(int i = 0; i < LENGTH_REF; i++)
+    for (int i = 0; i < LENGTH_REF; i++)
     {
-    	for(int j = 0; j < N_FEATURES; j++)
-    	{
-    		ref[i][j]=i;
-    	}
+        for (int j = 0; j < N_FEATURES; j++)
+        {
+            ref[i][j] = i;
+        }
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    association(ref,dat,filteredRef);
+    for (int i = 0; i < 1000; i++)
+    {
+        association(ref, dat, filteredRef);
+    }
 
     auto t2 = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    printf("Code execution time : %ld \n", duration);
+    double ellapsed = duration / 1000.;
 
-    for(int i = 0; i < LENGTH_DAT; i++)
+    printf("Code execution time : %f \n", ellapsed);
+
+    for (int i = 0; i < LENGTH_DAT; i++)
     {
-    	for(int j = 0; j < N_FEATURES; j++)
-    	{
-    		printf("%f,",filteredRef[i][j]);
-    	}
+        for (int j = 0; j < N_FEATURES; j++)
+        {
+            printf("%f,", filteredRef[i][j]);
+        }
         printf("\n");
     }
 

@@ -2,77 +2,26 @@
 #include <cstdio>
 #include <math.h>
 
-#define WIDTH 32
-#define HEIGHT 32
+#define WIDTH 64
+#define HEIGHT 64
 #define WIN_SIZE 3 //Must be odd !
 #define HALF_SIZE (((WIN_SIZE)-1) / 2)
 
-/*!
- * \brief Asserts wether a certain pixel is within the picture boundries
- * \param x int, column of the pixel
- * \param y int, row of the pixel
- * \return True if the pixel is in the picture, False otherwise
- */
-inline bool bounds_ok(int y, int x)
+inline bool bounds_ok(unsigned char y, unsigned char x)
 {
     return (0 <= y && y < HEIGHT && 0 <= x && x < WIDTH);
 }
 
-/*!
- * \brief Computes the median filter at a certain pixel of the picture
- * \param windows int[WIN_SIZE][WIN_SIZE], the filtering window around the considered pixel
- * \param x int, column of the pixel
- * \param y int, row of the pixel
- * \return int, result of the filter
- */
-inline int single_medianFilter(int window[WIN_SIZE][WIN_SIZE], int y, int x)
+void filter(unsigned char picture[HEIGHT][WIDTH], unsigned char filteredPicture[HEIGHT][WIDTH])
 {
-    int size = 0;
-    int flattenWindow[WIN_SIZE * WIN_SIZE];
 
-FLATTEN1:
-    for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
-    {
-    FLATTEN2:
-        for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
-        {
-            if (bounds_ok(y + i, x + j))
-            {
-                flattenWindow[size] = window[i + HALF_SIZE][j + HALF_SIZE];
-                size++;
-            }
-        }
-    }
-
-FIRST:
-    for (int i = 0; i < size - 1; i++)
-    {
-    SECOND:
-        for (int j = 0; j < size - i - 1; j++)
-        {
-
-            if (flattenWindow[j] > flattenWindow[j + 1])
-            {
-                int temp = flattenWindow[j];
-                flattenWindow[j] = flattenWindow[j + 1];
-                flattenWindow[j + 1] = temp;
-            }
-        }
-    }
-    return (flattenWindow[(int)floor(size / 2)]);
-}
-
-/*!
- * \brief Computes the filter over all the picture
- * \param inStream, hls::stream<intSdCh> input stream, must send the picture
- * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
- */
-void filter(int picture[HEIGHT][WIDTH], int filteredPicture[HEIGHT][WIDTH])
-{
     //Array initialisation
 
     //Convolution window
-    int window[WIN_SIZE][WIN_SIZE];
+    unsigned char window[WIN_SIZE * WIN_SIZE];
+
+    unsigned char temp1, temp2, result;
+    unsigned int counter, index;
 
 LOOPY:
     for (int y = 0; y < HEIGHT; y++)
@@ -80,6 +29,7 @@ LOOPY:
     LOOPX:
         for (int x = 0; x < WIDTH; x++)
         {
+            counter = 0;
             //Load window
         LOADI:
             for (int i = -HALF_SIZE; i <= HALF_SIZE; i++)
@@ -87,11 +37,33 @@ LOOPY:
             LOADJ:
                 for (int j = -HALF_SIZE; j <= HALF_SIZE; j++)
                 {
-                    window[i + HALF_SIZE][j + HALF_SIZE] = picture[y + i][x + j];
+                    if (bounds_ok(y + i, x + j))
+                    {
+                        index = counter;
+                        result = picture[y + i][x + j];
+                    SORT1:
+                        for (int k = 0; k < counter; k++)
+                        {
+                            if (window[k] > result)
+                            {
+                                temp1 = window[k];
+                                index = k;
+                            SORT2:
+                                for (int l = k + 1; l <= counter; l++)
+                                {
+                                    temp2 = window[l];
+                                    window[l] = temp1;
+                                    temp1 = temp2;
+                                }
+                                break;
+                            }
+                        }
+                        window[index] = result;
+                        counter += 1;
+                    }
                 }
             }
-
-            filteredPicture[y][x] = single_medianFilter(window, y, x);
+            filteredPicture[y][x] = window[(int)floor(counter / 2)];
         }
     }
 }
@@ -99,8 +71,8 @@ LOOPY:
 main()
 {
     //Array initialisations
-    int picture[HEIGHT][WIDTH];
-    int filteredPicture[HEIGHT][WIDTH];
+    unsigned char picture[HEIGHT][WIDTH];
+    unsigned char filteredPicture[HEIGHT][WIDTH];
 
     //Fill the picture
     for (int y = 0; y < HEIGHT; y++)
@@ -114,13 +86,18 @@ main()
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    filter(picture, filteredPicture);
+    for (int i = 0; i < 1000; i++)
+    {
+        filter(picture, filteredPicture);
+    }
 
     auto t2 = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    printf("Code execution time : %ld \n", duration);
+    double ellapsed = duration / 1000.;
+
+    printf("Code execution time : %f \n", ellapsed);
 
     //Fill the picture
     for (int y = 0; y < HEIGHT; y++)

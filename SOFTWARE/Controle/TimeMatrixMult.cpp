@@ -29,36 +29,41 @@ LOOP1:
 main()
 {
     //Array initialisations
-	float A[DIM][DIM];
-	float B[DIM][DIM];
-	float C[DIM][DIM];
+    float A[DIM][DIM];
+    float B[DIM][DIM];
+    float C[DIM][DIM];
 
     for (int i = 0; i < DIM; i++)
-	{
-		for (int j = 0; j < DIM; j++)
-		{
-			A[i][j] = (i == j) ? 1 : 0;
-			B[i][j] = i * j;
-		}
-	}
+    {
+        for (int j = 0; j < DIM; j++)
+        {
+            A[i][j] = (i == j) ? 1 : 0;
+            B[i][j] = i * j;
+        }
+    }
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    matrixMult(A,B,C);
+    for (int i = 0; i < 1000; i++)
+    {
+        matrixMult(A, B, C);
+    }
 
     auto t2 = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    printf("Code execution time : %ld \n", duration);
+    double ellapsed = duration / 1000.;
+
+    printf("Code execution time : %f \n", ellapsed);
 
     for (int i = 0; i < DIM; i++)
-	{
-		for (int j = 0; j < DIM; j++)
-		{
-			printf("%f,",C[i][j]);
-		}
+    {
+        for (int j = 0; j < DIM; j++)
+        {
+            printf("%f,", C[i][j]);
+        }
         printf("\n");
-	}
+    }
 
     return 0;
 }
