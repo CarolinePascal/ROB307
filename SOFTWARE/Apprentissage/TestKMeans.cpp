@@ -10,16 +10,16 @@ int main()
 	hls::stream<intSdCh> outputStream;
 
 	//Input array initialisation
-	int points[N_POINTS][N_FEATURES];
+	unsigned char points[N_POINTS][N_FEATURES];
 
-	/*KNN*/
-	int clusters[N_POINTS];
+	//For KNN
+	unsigned char clusters[N_POINTS];
 
 	for (int i = 0; i < N_POINTS; i++)
 	{
 		for (int j = 0; j < N_FEATURES; j++)
 		{
-			points[i][j] = rand()%255;
+			points[i][j] = rand() % 255;
 		}
 	}
 
@@ -77,7 +77,7 @@ int main()
 	}
 	printf("} \n");
 
-	/*KMeans only*/
+	//For KMeans only, uncomment here
 	//return(0);
 
 	//Send data to the input stream
@@ -110,7 +110,7 @@ int main()
 		inputStream.write(aValue);
 	}
 
-	//We try to classify the first point
+	//Classify the first point
 	for (int i = 0; i < N_FEATURES; i++)
 	{
 		intSdCh aValue;

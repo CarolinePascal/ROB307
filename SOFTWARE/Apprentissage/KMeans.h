@@ -13,7 +13,5 @@
 typedef ap_axis<32, 2, 5, 6> intSdCh;
 
 void KMeans(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream);
-int get_cluster(int point[N_FEATURES], int centroids[N_CLUSTER][N_FEATURES]);
 
 void KNN(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream);
-int get_class(int newPoint[N_FEATURES], int points[N_POINTS][N_FEATURES], int clusters[N_POINTS]);

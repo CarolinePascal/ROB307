@@ -14,15 +14,15 @@ void KMeans(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
     //Array initialisation
 
     //Points to be clusterised
-    int points[N_POINTS][N_FEATURES];
+    unsigned char points[N_POINTS][N_FEATURES];
     //Centroids of the clusters - step i
-    int centroids[N_CLUSTER][N_FEATURES];
+    unsigned char centroids[N_CLUSTER][N_FEATURES];
     //Centroids of the clusters - step i+1
-    int new_centroids[N_CLUSTER][N_FEATURES] = {0};
+    unsigned char new_centroids[N_CLUSTER][N_FEATURES] = {0};
     //Counter of the number of points in each cluster
-    int np_cluster[N_CLUSTER] = {0};
+    unsigned int np_cluster[N_CLUSTER] = {0};
     //Indices of the corresponding cluster for each point
-    int results[N_POINTS];
+    unsigned char results[N_POINTS];
 
     intSdCh valRef;
 
@@ -32,7 +32,7 @@ READ_POINTS:
         for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh valIn = inStream.read();
-            points[i][j] = valIn.data;
+            points[i][j] = (unsigned char)valIn.data;
             if (i == 0 && j == 0)
             {
                 valRef = valIn;
@@ -46,22 +46,48 @@ READ_CENTROIDS:
         for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh valIn = inStream.read();
-            centroids[i][j] = valIn.data;
+            centroids[i][j] = (unsigned char)valIn.data;
         }
     }
 
-    int end = 0;
+    unsigned char end = 0;
+    unsigned int distance, min_distance;
+    unsigned char cluster;
 
+    //Limit the number of iterations
 ITERATIONS:
     for (int n = 0; n < N_ITER; n++)
     {
         end = 1;
 
-    //Compute the asssociations between points and centroids into clusters
+        //Compute the asssociations between points and centroids into clusters
+
     CLUSTER:
+        //For each point...
         for (int i = 0; i < N_POINTS; i++)
         {
-            int cluster = get_cluster(points[i], centroids);
+            min_distance = 999999999;
+        //...Compute the distance to centroids
+        GET_CLUSTER1:
+            for (int c = 0; c < N_CLUSTER; c++)
+            {
+                distance = 0;
+
+            GET_CLUSTER2:
+                for (int j = 0; j < N_FEATURES; j++)
+                {
+                    distance += ((points[i][j] - centroids[c][j]) * (points[i][j] - centroids[c][j]));
+                }
+
+                //If the distance is smaller, update it
+                if (distance < min_distance)
+                {
+                    min_distance = distance;
+                    cluster = c;
+                }
+            }
+
+            //Check wether the associations changed
             if (cluster != results[i])
             {
                 results[i] = cluster;
@@ -70,13 +96,13 @@ ITERATIONS:
             np_cluster[cluster] += 1;
         }
 
-        //If the associations don't change, we exit the loop
+        //If the associations didn't change, exit the loop
         if (end == 1)
         {
             break;
         }
 
-    //Otherwise, we uptade the centroids to their new values
+        //Otherwise, uptade the centroids to their new values
     SUM:
         for (int i = 0; i < N_POINTS; i++)
         {
@@ -93,7 +119,7 @@ ITERATIONS:
             {
                 if (np_cluster[c] != 0)
                 {
-                    centroids[c][f] = (int)(new_centroids[c][f] / np_cluster[c]);
+                    centroids[c][f] = (unsigned char)(new_centroids[c][f] / np_cluster[c]);
                 }
                 new_centroids[c][f] = 0;
             }
@@ -130,11 +156,15 @@ void KNN(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
     //Array initialisation
 
     //Clusterised points
-    int points[N_POINTS][N_FEATURES];
-    //Clusters of the points
-    int clusters[N_POINTS];
-    //Point to classify
-    int newPoint[N_FEATURES];
+    unsigned char points[N_POINTS][N_FEATURES];
+    //Clusters of each point in points
+    unsigned char clusters[N_POINTS];
+    //New point to classify
+    unsigned char newPoint[N_FEATURES];
+    //Distance tool list
+    unsigned int distances[N_POINTS];
+    //Counter of clusters
+    unsigned int counter[N_CLUSTER] = {0};
 
     intSdCh valRef;
 
@@ -144,7 +174,7 @@ READ_POINTS:
         for (int j = 0; j < N_FEATURES; j++)
         {
             intSdCh valIn = inStream.read();
-            points[i][j] = valIn.data;
+            points[i][j] = (unsigned char)valIn.data;
             if (i == 0 && j == 0)
             {
                 valRef = valIn;
@@ -156,48 +186,19 @@ READ_CLUSTERS:
     for (int i = 0; i < N_POINTS; i++)
     {
         intSdCh valIn = inStream.read();
-        clusters[i] = valIn.data;
+        clusters[i] = (unsigned char)valIn.data;
     }
 
 READ_NEWPOINT:
     for (int i = 0; i < N_FEATURES; i++)
     {
         intSdCh valIn = inStream.read();
-        newPoint[i] = valIn.data;
+        newPoint[i] = (unsigned char)valIn.data;
     }
 
-    //Get the cluster corresponding to the new point according to the clusters of its K nearest neighbours
-    int cluster = get_class(newPoint, points, clusters);
+    unsigned int distance;
 
-    //Send the result
-    intSdCh valOut;
-    valOut.data = cluster;
-    valOut.keep = valRef.keep;
-    valOut.strb = valRef.strb;
-    valOut.user = valRef.user;
-    valOut.last = 1;
-    valOut.id = valRef.id;
-    valOut.dest = valRef.dest;
-    outStream << valOut;
-}
-
-/*!
- * \brief Computes the cluster associated to a certain point given a list of clusterised points
- * \param newPoint int[N_FEATURES], point to be associated
- * \param points int[N_POINTS][N_FEATURES], clusterised points
- * \param clusters int[N_POINTS], index of the cluster of each element of points
- * \return int, index of the associated cluster
- */
-int get_class(int newPoint[N_FEATURES], int points[N_POINTS][N_FEATURES], int clusters[N_POINTS])
-{
-    float distances[N_POINTS];
-    int counter[N_CLUSTER] = {0};
-
-    float distance = 0;
-    float min_distance = -99999999999;
-    int index = -1;
-
-    //Computing the distances
+    //Compute the distances from the new point to the other points
 GET_DIST1:
     for (int i = 0; i < N_POINTS; i++)
     {
@@ -212,9 +213,9 @@ GET_DIST1:
         distances[i] = distance;
     }
 
-    float temp;
+    unsigned int temp;
 
-//Sorting the distances
+    //Sort the distances
 SORT1:
     for (int i = 0; i < N_POINTS - 1; i++)
     {
@@ -234,16 +235,16 @@ SORT1:
         }
     }
 
-//We only keep the K closest neighbours
+    //Keep only the K closest neighbours
 COUNTER:
     for (int i = 0; i < K; i++)
     {
         counter[clusters[i]] += 1;
     }
 
-    int cluster = 0;
+    unsigned char cluster = 0;
 
-//Classification
+    //Classification
 GET_CLASS:
     for (int i = 0; i < N_CLUSTER; i++)
     {
@@ -253,39 +254,14 @@ GET_CLASS:
         }
     }
 
-    return (cluster);
-}
-
-/*!
- * \brief Computes the cluster associated to a certain point given the centroids of the clusters
- * \param point int[N_FEATURES], point to be associated
- * \param centrois int[N_CLUSTER][N_FEATURES], centroids of the clusters
- * \return int, index of the associated centroid
- */
-int get_cluster(int point[N_FEATURES], int centroids[N_CLUSTER][N_FEATURES])
-{
-    float distance = 0;
-    float min_distance = 99999999999;
-    int cluster = 0;
-
-GET_CLUSTER1:
-    for (int c = 0; c < N_CLUSTER; c++)
-    {
-        distance = 0;
-
-    //Computing the distance to centroids
-    GET_CLUSTER2:
-        for (int j = 0; j < N_FEATURES; j++)
-        {
-            distance += ((point[j] - centroids[c][j]) * (point[j] - centroids[c][j]));
-        }
-
-        //If the distance is smaller, we update it
-        if (distance < min_distance)
-        {
-            min_distance = distance;
-            cluster = c;
-        }
-    }
-    return cluster;
+    //Send the result
+    intSdCh valOut;
+    valOut.data = cluster;
+    valOut.keep = valRef.keep;
+    valOut.strb = valRef.strb;
+    valOut.user = valRef.user;
+    valOut.last = 1;
+    valOut.id = valRef.id;
+    valOut.dest = valRef.dest;
+    outStream << valOut;
 }
