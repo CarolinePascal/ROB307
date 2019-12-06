@@ -14,4 +14,5 @@ typedef ap_axis<32, 2, 5, 6> intSdCh;
 
 void KMeans(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream);
 
+//[UNUSED]
 void KNN(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream);

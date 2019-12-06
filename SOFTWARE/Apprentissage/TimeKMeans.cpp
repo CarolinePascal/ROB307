@@ -180,7 +180,9 @@ main()
     unsigned char points[N_POINTS][N_FEATURES];
     unsigned char centroids[N_CLUSTER][N_FEATURES];
     unsigned char clusters[N_POINTS];
-    unsigned char newPoint[N_FEATURES];
+
+    /*For KNN, uncomment here*/
+    //unsigned char newPoint[N_FEATURES];
 
     for (int i = 0; i < N_POINTS; i++)
     {
@@ -201,7 +203,7 @@ main()
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 100000; i++)
     {
         KMeans(points, centroids, clusters);
     }
@@ -210,7 +212,7 @@ main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    double ellapsed = duration / 1000.;
+    double ellapsed = duration / 100000.;
 
     printf("Code execution time : %f \n", ellapsed);
 
@@ -220,6 +222,8 @@ main()
     }
     printf("\n");
 
+    /*Code for KNN*/
+    /*
     for (int i = 0; i < N_FEATURES; i++)
     {
         newPoint[i] = points[0][i];
@@ -229,7 +233,7 @@ main()
 
     t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 100000; i++)
     {
         classPoint = KNN(points, clusters, newPoint);
     }
@@ -238,11 +242,12 @@ main()
 
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    ellapsed = duration / 1000.;
+    ellapsed = duration / 100000.;
 
     printf("Code execution time : %f \n", ellapsed);
 
     printf("%i \n", classPoint);
+    */
 
     return 0;
 }

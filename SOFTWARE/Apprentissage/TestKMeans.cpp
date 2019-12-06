@@ -12,8 +12,8 @@ int main()
 	//Input array initialisation
 	unsigned char points[N_POINTS][N_FEATURES];
 
-	//For KNN
-	unsigned char clusters[N_POINTS];
+	//For KNN, uncomment here
+	//unsigned char clusters[N_POINTS];
 
 	for (int i = 0; i < N_POINTS; i++)
 	{
@@ -66,8 +66,8 @@ int main()
 	{
 		intSdCh valOut;
 		outputStream.read(valOut);
-		/*KNN*/
-		clusters[i] = valOut.data;
+		//For KNN, uncomment here
+		//clusters[i] = valOut.data;
 		printf("%d", valOut.data);
 
 		if (i != N_POINTS - 1)
@@ -78,7 +78,11 @@ int main()
 	printf("} \n");
 
 	//For KMeans only, uncomment here
-	//return(0);
+	return (0);
+}
+
+/*Code for KNN*/
+/*
 
 	//Send data to the input stream
 	for (int i = 0; i < N_POINTS; i++)
@@ -135,3 +139,4 @@ int main()
 
 	return 0;
 }
+*/

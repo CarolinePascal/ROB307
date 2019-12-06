@@ -143,7 +143,7 @@ SEND:
 }
 
 /*!
- * \brief Computes the K-NN classification method on a given set of clusturised points containing a certain number of features each 
+ * \brief [UNUSED] Computes the K-NN classification method on a given set of clusturised points containing a certain number of features each 
  * \param inStream, hls::stream<intSdCh> input stream, must send the points set, their clusters and the point to classify
  * \param outStream, hls::stream<intSdCh> output stream, returns the result of the classification
  */
