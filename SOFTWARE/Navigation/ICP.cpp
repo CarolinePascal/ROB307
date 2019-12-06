@@ -20,7 +20,7 @@ READ_REF:
         {
             intSdCh valIn = inStream.read();
             ref[i][j] = valIn.data;
-            if (i == 0 && j == 0)
+            if (i + j == 0)
             {
                 valRef = valIn;
             }
@@ -85,7 +85,7 @@ SEND:
             valOut.keep = valRef.keep;
             valOut.strb = valRef.strb;
             valOut.user = valRef.user;
-            valOut.last = (i == LENGTH_DAT - 1) ? 1 : 0;
+            valOut.last = (i + j == LENGTH_DAT - 1 + N_FEATURES - 1) ? 1 : 0;
             valOut.id = valRef.id;
             valOut.dest = valRef.dest;
             outStream << valOut;

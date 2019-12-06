@@ -8,5 +8,17 @@
 
 typedef ap_axis<32, 2, 5, 6> intSdCh;
 
+/*!
+ * \brief Asserts wether a certain pixel is within the picture boundries
+ * \param x unsigned char, column of the pixel
+ * \param y unsigned char, row of the pixel
+ * \return True if the pixel is in the picture, False otherwise
+ */
 inline bool bounds_ok(unsigned char y, unsigned char x);
-void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream);
+
+/*!
+ * \brief Computes the median filter over all the picture
+ * \param inStream, hls::stream<intSdCh> input stream, must send the picture
+ * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
+ */
+void filter(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream);

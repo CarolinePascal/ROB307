@@ -2,14 +2,11 @@
 #include <stdlib.h>
 #include "MatrixMult.h"
 #include <iostream>
-#include <fstream>
-
-using namespace std;
 
 int main()
 {
-	hls::stream<intSdCh> inputStream;
-	hls::stream<intSdCh> outputStream;
+	hls::stream<intSdCh> inStream;
+	hls::stream<intSdCh> outStream;
 
 	//Array initialisations
 	float A[DIM][DIM];
@@ -38,7 +35,7 @@ int main()
 			aValue.user = 0;
 			aValue.id = 0;
 			aValue.dest = 0;
-			inputStream.write(aValue);
+			inStream.write(aValue);
 		}
 	}
 
@@ -49,18 +46,18 @@ int main()
 		{
 			intSdCh aValue;
 			aValue.data = B[i][j];
-			aValue.last = (i * j == (DIM - 1) * (DIM - 1)) ? 1 : 0;
+			aValue.last = (i + j == DIM - 1 + DIM - 1) ? 1 : 0;
 			aValue.strb = -1;
 			aValue.keep = 15;
 			aValue.user = 0;
 			aValue.id = 0;
 			aValue.dest = 0;
-			inputStream.write(aValue);
+			inStream.write(aValue);
 		}
 	}
 
 	//Perform multiplication
-	matrixMult(inputStream, outputStream);
+	matrixMult(inStream, outStream);
 
 	//Print results
 	printf("Result= \n");
@@ -69,9 +66,8 @@ int main()
 		for (int j = 0; j < DIM; j++)
 		{
 			intSdCh valOut;
-			outputStream.read(valOut);
-			printf("%d", (int)valOut.data);
-			printf(" ");
+			outStream.read(valOut);
+			printf("%d ", (int)valOut.data);
 		}
 		printf("\n");
 	}

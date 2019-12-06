@@ -1,10 +1,5 @@
 #include "KMeans.h"
 
-/*!
- * \brief Computes the K-Means clusterisation method on a given set of points containing a certain number of features each 
- * \param inStream, hls::stream<intSdCh> input stream, must send the points set and the first centroids
- * \param outStream, hls::stream<intSdCh> output stream, returns the result of the clusterisation
- */
 void KMeans(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
 {
 #pragma HLS INTERFACE axis port = outStream
@@ -33,7 +28,7 @@ READ_POINTS:
         {
             intSdCh valIn = inStream.read();
             points[i][j] = (unsigned char)valIn.data;
-            if (i == 0 && j == 0)
+            if (i + j == 0)
             {
                 valRef = valIn;
             }
@@ -128,25 +123,20 @@ ITERATIONS:
     }
 
 SEND:
-    for (int idx = 0; idx < N_POINTS; idx++)
+    for (int i = 0; i < N_POINTS; i++)
     {
         intSdCh valOut;
-        valOut.data = results[idx];
+        valOut.data = results[i];
         valOut.keep = valRef.keep;
         valOut.strb = valRef.strb;
         valOut.user = valRef.user;
-        valOut.last = (idx == (N_POINTS - 1)) ? 1 : 0;
+        valOut.last = (i == N_POINTS - 1) ? 1 : 0;
         valOut.id = valRef.id;
         valOut.dest = valRef.dest;
         outStream << valOut;
     }
 }
 
-/*!
- * \brief [UNUSED] Computes the K-NN classification method on a given set of clusturised points containing a certain number of features each 
- * \param inStream, hls::stream<intSdCh> input stream, must send the points set, their clusters and the point to classify
- * \param outStream, hls::stream<intSdCh> output stream, returns the result of the classification
- */
 void KNN(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
 {
 #pragma HLS INTERFACE axis port = outStream

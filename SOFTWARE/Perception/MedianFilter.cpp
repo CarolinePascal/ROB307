@@ -1,26 +1,11 @@
-#include "hls_stream.h"
 #include "MedianFilter.h"
 
-#define WIN_SIZE 3 // must be odd
-#define HALF_SIZE (((WIN_SIZE)-1) / 2)
-
-/*!
- * \brief Asserts wether a certain pixel is within the picture boundries
- * \param x unsigned char, column of the pixel
- * \param y unsigned char, row of the pixel
- * \return True if the pixel is in the picture, False otherwise
- */
 inline bool bounds_ok(unsigned char y, unsigned char x)
 {
     return (0 <= y && y < HEIGHT && 0 <= x && x < WIDTH);
 }
 
-/*!
- * \brief Computes the filter over all the picture
- * \param inStream, hls::stream<intSdCh> input stream, must send the picture
- * \param outStream, hls::stream<intSdCh> output stream, returns the result of the convolution
- */
-void filter(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream)
+void filter(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
 {
 #pragma HLS INTERFACE axis port = outStream
 #pragma HLS INTERFACE axis port = inStream
@@ -46,9 +31,9 @@ DATA_INY:
     DATA_INX:
         for (int y = 0; y < HEIGHT; y++)
         {
-            intSdCh valIn = in_stream.read();
+            intSdCh valIn = inStream.read();
             picture[y][x] = (unsigned char)valIn.data;
-            if (x * y == 0)
+            if (x + y == 0)
             {
                 valRef = valIn;
             }
@@ -111,10 +96,10 @@ DATA_OUTY:
             valOut.keep = valRef.keep;
             valOut.strb = valRef.strb;
             valOut.user = valRef.user;
-            valOut.last = (x * y == (HEIGHT - 1) * (WIDTH - 1)) ? 1 : 0;
+            valOut.last = (x + y == HEIGHT - 1 + WIDTH - 1) ? 1 : 0;
             valOut.id = valRef.id;
             valOut.dest = valRef.dest;
-            out_stream << valOut;
+            outStream << valOut;
         }
     }
 }

@@ -12,10 +12,6 @@
 
 void KMeans(unsigned char points[N_POINTS][N_FEATURES], unsigned char centroids[N_CLUSTER][N_FEATURES], unsigned char results[N_POINTS])
 {
-#pragma HLS INTERFACE axis port = outStream
-#pragma HLS INTERFACE axis port = inStream
-#pragma HLS INTERFACE s_axilite port = return bundle = CRTL_BUS
-
     //Array initialisation
 
     //Centroids of the clusters - step i+1
@@ -103,10 +99,6 @@ ITERATIONS:
 
 unsigned char KNN(unsigned char points[N_POINTS][N_FEATURES], unsigned char clusters[N_POINTS], unsigned char newPoint[N_FEATURES])
 {
-#pragma HLS INTERFACE axis port = outStream
-#pragma HLS INTERFACE axis port = inStream
-#pragma HLS INTERFACE s_axilite port = return bundle = CRTL_BUS
-
     //Array initialisation
 
     //Distance tool list

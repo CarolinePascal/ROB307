@@ -6,8 +6,8 @@
 
 int main()
 {
-	hls::stream<intSdCh> inputStream;
-	hls::stream<intSdCh> outputStream;
+	hls::stream<intSdCh> inStream;
+	hls::stream<intSdCh> outStream;
 
 	//Input array initialisation
 	unsigned char points[N_POINTS][N_FEATURES];
@@ -36,7 +36,7 @@ int main()
 			aValue.user = 0;
 			aValue.id = 0;
 			aValue.dest = 0;
-			inputStream.write(aValue);
+			inStream.write(aValue);
 		}
 	}
 
@@ -48,27 +48,27 @@ int main()
 		{
 			intSdCh aValue;
 			aValue.data = points[index][j];
-			aValue.last = (i * j == (N_CLUSTER - 1) * (N_FEATURES - 1)) ? 1 : 0;
+			aValue.last = (i + j == N_CLUSTER - 1 + N_FEATURES - 1) ? 1 : 0;
 			aValue.strb = -1;
 			aValue.keep = 15;
 			aValue.user = 0;
 			aValue.id = 0;
 			aValue.dest = 0;
-			inputStream.write(aValue);
+			inStream.write(aValue);
 		}
 	}
 
 	//Perform clusterisation
-	KMeans(inputStream, outputStream);
+	KMeans(inStream, outStream);
 
 	printf("Result={");
 	for (int i = 0; i < (N_POINTS); i++)
 	{
 		intSdCh valOut;
-		outputStream.read(valOut);
+		outStream.read(valOut);
 		//For KNN, uncomment here
 		//clusters[i] = valOut.data;
-		printf("%d", valOut.data);
+		printf("%i", (int)valOut.data);
 
 		if (i != N_POINTS - 1)
 		{
@@ -97,7 +97,7 @@ int main()
 			aValue.user = 0;
 			aValue.id = 0;
 			aValue.dest = 0;
-			inputStream.write(aValue);
+			inStream.write(aValue);
 		}
 	}
 
@@ -111,7 +111,7 @@ int main()
 		aValue.user = 0;
 		aValue.id = 0;
 		aValue.dest = 0;
-		inputStream.write(aValue);
+		inStream.write(aValue);
 	}
 
 	//Classify the first point
@@ -125,15 +125,15 @@ int main()
 		aValue.user = 0;
 		aValue.id = 0;
 		aValue.dest = 0;
-		inputStream.write(aValue);
+		inStream.write(aValue);
 	}
 
 	//Perform classification
-	KNN(inputStream, outputStream);
+	KNN(inStream, outStream);
 
 	printf("Result={");
 	intSdCh valOut;
-	outputStream.read(valOut);
+	outStream.read(valOut);
 	printf("%d", valOut.data);
 	printf("}");
 

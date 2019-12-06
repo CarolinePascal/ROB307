@@ -1,7 +1,11 @@
 #include "MatrixMult.h"
 
-void matrixMult(hls::stream<intSdCh> &in_stream, hls::stream<intSdCh> &out_stream)
+void matrixMult(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream)
 {
+#pragma HLS INTERFACE axis port = outStream
+#pragma HLS INTERFACE axis port = inStream
+#pragma HLS INTERFACE s_axilite port = return bundle = CRTL_BUS
+
     //Array initialisations
     float A[DIM][DIM];
     float B[DIM][DIM];
@@ -14,9 +18,9 @@ READ_A:
     {
         for (int j = 0; j < DIM; j++)
         {
-            intSdCh valIn = in_stream.read();
+            intSdCh valIn = inStream.read();
             A[i][j] = valIn.data;
-            if (i * j == 0)
+            if (i + j == 0)
             {
                 valRef = valIn;
             }
@@ -28,7 +32,7 @@ READ_B:
     {
         for (int j = 0; j < DIM; j++)
         {
-            intSdCh valIn = in_stream.read();
+            intSdCh valIn = inStream.read();
             B[i][j] = valIn.data;
         }
     }
@@ -62,10 +66,10 @@ SEND:
             valOut.keep = valRef.keep;
             valOut.strb = valRef.strb;
             valOut.user = valRef.user;
-            valOut.last = (i * j == (DIM - 1) * (DIM - 1)) ? 1 : 0;
+            valOut.last = (i + j == DIM - 1 + DIM - 1) ? 1 : 0;
             valOut.id = valRef.id;
             valOut.dest = valRef.dest;
-            out_stream << valOut;
+            outStream << valOut;
         }
     }
 }

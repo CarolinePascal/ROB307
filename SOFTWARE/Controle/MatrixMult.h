@@ -5,4 +5,9 @@
 
 typedef ap_axis<32, 2, 5, 6> intSdCh;
 
-void matrixMult(hls::stream<intSdCh> &out_stream, hls::stream<intSdCh> &in_stream);
+/*!
+ * \brief Computes the multiplication of two matrices
+ * \param inStream, hls::stream<intSdCh> input stream, must send the two matrices to be multiplied
+ * \param outStream, hls::stream<intSdCh> output stream, sends the result of the multiplication
+ */
+void matrixMult(hls::stream<intSdCh> &inStream, hls::stream<intSdCh> &outStream);

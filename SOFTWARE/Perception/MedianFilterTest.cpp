@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include "MedianFilter.h"
 #include <iostream>
-#include <fstream>
 
 int main()
 {
-    hls::stream<intSdCh> inputStream;
-    hls::stream<intSdCh> outputStream;
+    hls::stream<intSdCh> inStream;
+    hls::stream<intSdCh> outStream;
 
     //Array initialisation
     unsigned char picture[HEIGHT][WIDTH];
@@ -29,26 +28,18 @@ int main()
         {
             intSdCh aValue;
             aValue.data = picture[y][x];
-            aValue.last = 0;
+            aValue.last = (x + y == HEIGHT - 1 + WIDTH - 1) ? 1 : 0;
             aValue.strb = -1;
             aValue.keep = 15;
             aValue.user = 0;
             aValue.id = 0;
             aValue.dest = 0;
-            inputStream.write(aValue);
+            inStream.write(aValue);
         }
     }
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-
     //Perform median filter
-    filter(outputStream, inputStream);
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-
-    printf("Code execution time : %ld \n", duration);
+    filter(inStream, outStream);
 
     printf("Result = \n");
     for (int y = 0; y < HEIGHT; y++)
@@ -56,12 +47,8 @@ int main()
         for (int x = 0; x < WIDTH; x++)
         {
             intSdCh valOut;
-            outputStream.read(valOut);
-            printf("%d", (int)valOut.data);
-            if (x * y != (WIDTH - 1) * (HEIGHT - 1))
-            {
-                printf(",");
-            }
+            outStream.read(valOut);
+            printf("%d ", (int)valOut.data);
         }
         printf("\n");
     }

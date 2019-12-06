@@ -2,14 +2,11 @@
 #include <stdlib.h>
 #include "Convolution.h"
 #include <iostream>
-#include <fstream>
-
-#include <chrono>
 
 int main()
 {
-    hls::stream<intSdCh> inputStream;
-    hls::stream<intSdCh> outputStream;
+    hls::stream<intSdCh> inStream;
+    hls::stream<intSdCh> outStream;
 
     //Array initialisation
     unsigned char picture[HEIGHT][WIDTH];
@@ -37,20 +34,12 @@ int main()
             aValue.user = 0;
             aValue.id = 0;
             aValue.dest = 0;
-            inputStream.write(aValue);
+            inStream.write(aValue);
         }
     }
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-
     //Perform median filter
-    convolution(outputStream, inputStream);
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-
-    printf("Code execution time : %ld \n", duration);
+    convolution(inStream, outStream);
 
     printf("Result = \n");
     for (int y = 0; y < HEIGHT; y++)
@@ -58,7 +47,7 @@ int main()
         for (int x = 0; x < WIDTH; x++)
         {
             intSdCh valOut;
-            outputStream.read(valOut);
+            outStream.read(valOut);
             printf("%d", (int)valOut.data);
             if (x * y != (WIDTH - 1) * (HEIGHT - 1))
             {
