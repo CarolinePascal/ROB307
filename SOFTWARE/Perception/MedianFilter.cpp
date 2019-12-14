@@ -1,4 +1,5 @@
 #include "MedianFilter.h"
+#include <math.h>
 
 inline bool bounds_ok(unsigned char y, unsigned char x)
 {
@@ -58,21 +59,38 @@ LOOPY:
                     {
                         index = counter;
                         result = picture[y + i][x + j];
-                    SORT1:
-                        for (int k = 0; k < counter; k++)
-                        {
-                            if (window[k] > result)
+                        SORT1:
+                            for (int k = 0; k < WIN_SIZE * WIN_SIZE; k++)
                             {
-                                temp1 = window[k];
-                                index = k;
-                            SORT2:
-                                for (int l = k + 1; l <= counter; l++)
+                                if (k >= counter)
                                 {
-                                    temp2 = window[l];
-                                    window[l] = temp1;
-                                    temp1 = temp2;
+                                    break;
                                 }
-                                break;
+
+                                if (window[k] > result)
+                                {
+                                    temp1 = window[k];
+                                    index = k;
+                                SORT2:
+                                    for (int l = 0; l <= WIN_SIZE * WIN_SIZE; l++)
+                                    {
+                                        if (l < k + 1)
+                                        {
+                                            continue;
+                                        }
+
+                                        else
+                                        {
+                                            if (l > counter)
+                                            {
+                                                break;
+                                            }
+                                            temp2 = window[l];
+                                            window[l] = temp1;
+                                            temp1 = temp2;
+                                        }
+                                    }
+                                    break;
                             }
                         }
                         window[index] = result;
