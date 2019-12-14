@@ -2,8 +2,10 @@
 #include <cstdio>
 #include <math.h>
 
-#define WIDTH 64
-#define HEIGHT 64
+#define N_TESTS 10000
+
+#define WIDTH 16
+#define HEIGHT 16
 #define WIN_SIZE 3 //Must be odd !
 #define HALF_SIZE (((WIN_SIZE)-1) / 2)
 
@@ -42,18 +44,35 @@ LOOPY:
                         index = counter;
                         result = picture[y + i][x + j];
                     SORT1:
-                        for (int k = 0; k < counter; k++)
+                        for (int k = 0; k < WIN_SIZE * WIN_SIZE; k++)
                         {
+                            if (k >= counter)
+                            {
+                                break;
+                            }
+
                             if (window[k] > result)
                             {
                                 temp1 = window[k];
                                 index = k;
                             SORT2:
-                                for (int l = k + 1; l <= counter; l++)
+                                for (int l = 0; l <= WIN_SIZE * WIN_SIZE; l++)
                                 {
-                                    temp2 = window[l];
-                                    window[l] = temp1;
-                                    temp1 = temp2;
+                                    if (l < k + 1)
+                                    {
+                                        continue;
+                                    }
+
+                                    else
+                                    {
+                                        if (l > counter)
+                                        {
+                                            break;
+                                        }
+                                        temp2 = window[l];
+                                        window[l] = temp1;
+                                        temp1 = temp2;
+                                    }
                                 }
                                 break;
                             }
@@ -68,7 +87,7 @@ LOOPY:
     }
 }
 
-main()
+int main()
 {
     //Array initialisations
     unsigned char picture[HEIGHT][WIDTH];
@@ -86,7 +105,7 @@ main()
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < N_TESTS; i++)
     {
         filter(picture, filteredPicture);
     }
@@ -95,7 +114,7 @@ main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    double ellapsed = duration / 1000.;
+    double ellapsed = (double)duration / (1000. * N_TESTS);
 
     printf("Code execution time : %f \n", ellapsed);
 

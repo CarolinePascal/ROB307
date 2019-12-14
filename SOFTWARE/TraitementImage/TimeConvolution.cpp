@@ -2,8 +2,10 @@
 #include <cstdio>
 #include <math.h>
 
-#define WIDTH 32
-#define HEIGHT 32
+#define N_TESTS 10000
+
+#define WIDTH 256
+#define HEIGHT 256
 #define WIN_SIZE 3 //Must be odd !
 #define HALF_SIZE (((WIN_SIZE)-1) / 2)
 
@@ -63,7 +65,7 @@ int main()
 
     auto t1 = std::chrono::system_clock::now();
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < N_TESTS; i++)
     {
         convolution(picture, filteredPicture);
     }
@@ -72,7 +74,7 @@ int main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    double ellapsed = duration / 1000.;
+    double ellapsed = (double)duration / (1000. * N_TESTS);
 
     printf("Code execution time : %f \n", ellapsed);
 

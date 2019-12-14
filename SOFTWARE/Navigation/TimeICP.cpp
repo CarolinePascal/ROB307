@@ -2,8 +2,10 @@
 #include <cstdio>
 #include <math.h>
 
-#define LENGTH_DAT 10
-#define LENGTH_REF 10
+#define N_TESTS 10000
+
+#define LENGTH_DAT 16
+#define LENGTH_REF 16
 #define N_FEATURES 2
 
 void association(float ref[LENGTH_REF][N_FEATURES], float dat[LENGTH_DAT][N_FEATURES], float filteredRef[LENGTH_DAT][N_FEATURES])
@@ -47,7 +49,7 @@ DAT:
     }
 }
 
-main()
+int main()
 {
     float dat[LENGTH_DAT][N_FEATURES];
     float ref[LENGTH_REF][N_FEATURES];
@@ -71,7 +73,7 @@ main()
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < N_TESTS; i++)
     {
         association(ref, dat, filteredRef);
     }
@@ -80,10 +82,11 @@ main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    double ellapsed = duration / 1000.;
+    double ellapsed = (double)duration / (1000. * N_TESTS);
 
     printf("Code execution time : %f \n", ellapsed);
 
+    /*
     for (int i = 0; i < LENGTH_DAT; i++)
     {
         for (int j = 0; j < N_FEATURES; j++)
@@ -92,6 +95,7 @@ main()
         }
         printf("\n");
     }
+    */
 
     return 0;
 }

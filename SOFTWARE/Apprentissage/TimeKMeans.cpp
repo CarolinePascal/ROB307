@@ -2,9 +2,12 @@
 #include <cstdio>
 #include <math.h>
 
+#define N_TESTS 10000
+
 #define N_FEATURES 3
-#define N_CLUSTER 3
-#define N_POINTS 10
+#define N_CLUSTER 10
+
+#define N_POINTS 1024
 
 #define N_ITER 10
 
@@ -167,7 +170,7 @@ GET_CLASS:
     return (cluster);
 }
 
-main()
+int main()
 {
     unsigned char points[N_POINTS][N_FEATURES];
     unsigned char centroids[N_CLUSTER][N_FEATURES];
@@ -195,7 +198,7 @@ main()
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < N_TESTS; i++)
     {
         KMeans(points, centroids, clusters);
     }
@@ -204,15 +207,17 @@ main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    double ellapsed = duration / 100000.;
+    double ellapsed = (double)duration / (1000 * N_TESTS);
 
     printf("Code execution time : %f \n", ellapsed);
 
+    /*
     for (int i = 0; i < N_POINTS; i++)
     {
         printf("%i,", clusters[i]);
     }
     printf("\n");
+    */
 
     /*Code for KNN*/
     /*

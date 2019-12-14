@@ -1,21 +1,18 @@
 #include <chrono>
 #include <cstdio>
-#include <math.h>
 
-#define DIM 32
+#define N_TESTS 10000
+
+#define DIM 128
 
 void matrixMult(float A[DIM][DIM], float B[DIM][DIM], float C[DIM][DIM])
 {
-//Perform multiplication
-LOOP1:
+    //Perform multiplication
     for (int ia = 0; ia < DIM; ++ia)
     {
-    LOOP2:
         for (int ib = 0; ib < DIM; ++ib)
         {
             float sum = 0;
-
-        LOOP3:
             for (int id = 0; id < DIM; ++id)
             {
                 sum += A[ia][id] * B[id][ib];
@@ -26,7 +23,7 @@ LOOP1:
     }
 }
 
-main()
+int main()
 {
     //Array initialisations
     float A[DIM][DIM];
@@ -43,7 +40,7 @@ main()
     }
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < N_TESTS; i++)
     {
         matrixMult(A, B, C);
     }
@@ -52,10 +49,11 @@ main()
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    double ellapsed = duration / 1000.;
+    double ellapsed = (double)duration / (1000. * N_TESTS);
 
     printf("Code execution time : %f \n", ellapsed);
 
+    /*
     for (int i = 0; i < DIM; i++)
     {
         for (int j = 0; j < DIM; j++)
@@ -64,6 +62,6 @@ main()
         }
         printf("\n");
     }
-
+    */
     return 0;
 }
